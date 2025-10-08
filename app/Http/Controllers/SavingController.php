@@ -16,7 +16,7 @@ class SavingController extends Controller
     public function index()
     {
         $saving = Saving::where('user_id',Auth::user()->id)->orderBy('created_at','DESC')->paginate(10);
-        return view('pages.savings.savings')
+        return view('saving')
         ->with('saving',$saving);
     }
 
@@ -26,7 +26,7 @@ class SavingController extends Controller
     public function create()
     {
         $bank = Bank::all();
-        return view('pages.savings.create')
+        return view('saving.create')
         ->with('bank',$bank);
     }
 

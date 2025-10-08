@@ -2,30 +2,29 @@
 
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
-use app\Http\Controllers\TransactionController;
-use app\Http\Controllers\SavingController;
-use app\Http\Controllers\CategoryTransactionController;
-use app\Http\Controllers\BankController;
-use app\Http\Controllers\BusinessController;
-use app\Http\Controllers\NotesController;
-use app\Http\Controllers\ReportWeeklyController;
+use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\SavingController;
+use App\Http\Controllers\CategoryTransactionController;
+use App\Http\Controllers\BankController;
+use App\Http\Controllers\BusinessController;
+use App\Http\Controllers\NotesController;
+use App\Http\Controllers\ReportWeeklyController;
+use App\Http\Controllers\ScheduledTranscationController;
 
 Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
-Route::view('dashboard', 'dashboard')
-    ->middleware(['auth', 'verified'])
-    ->name('dashboard');
-
-     Route::prefix('/transaksi')->group(function () {
-        Route::get('/', [TransactionController::class, 'index'])->name('transaksi');
-        Route::get('/create', [TransactionController::class, 'create'])->name('transaksi.create');
-        Route::post('/store', [TransactionController::class, 'store'])->name('transaksi.store');
-        Route::get('/edit/{id}', [TransactionController::class,'edit'])->name('transaksi.edit');
-        Route::post('/update/{id}', [TransactionController::class, 'update'])->name('transaksi.update');
-        Route::post('/import', [TransactionController::class, 'import'])->name('transaksi.import');
-        Route::delete('/delete/{id}', [TransactionController::class, 'destroy'])->name('transaksi.delete');
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::view('dashboard', 'dashboard')->name('dashboard');
+    Route::prefix('/transaction')->group(function () {
+        Route::get('/', [TransactionController::class, 'index'])->name('transaction');
+        Route::get('/create', [TransactionController::class, 'create'])->name('transaction.create');
+        Route::post('/store', [TransactionController::class, 'store'])->name('transaction.store');
+        Route::get('/edit/{id}', [TransactionController::class,'edit'])->name('transaction.edit');
+        Route::post('/update/{id}', [TransactionController::class, 'update'])->name('transaction.update');
+        Route::post('/import', [TransactionController::class, 'import'])->name('transaction.import');
+        Route::delete('/delete/{id}', [TransactionController::class, 'destroy'])->name('transaction.delete');
     });
     Route::prefix('/savings')->group(function () {
         Route::get('/', [SavingController::class, 'index'])->name('savings');
@@ -34,6 +33,15 @@ Route::view('dashboard', 'dashboard')
         Route::get('/edit/{id}', [SavingController::class, 'edit'])->name('savings.edit');
         Route::post('/update/{id}', [SavingController::class, 'update'])->name('savings.update');
         Route::delete('/delete/{id}',[SavingController::class, 'destroy'])->name('savings.delete');
+    });
+
+    Route::prefix('/scheduledTransaction')->group(function () {
+        Route::get('/', [ScheduledTranscationController::class, 'index'])->name('scheduledTransaction');
+        Route::get('/create', [ScheduledTranscationController::class, 'create'])->name('scheduledTransaction.create');
+        Route::post('/store', [ScheduledTranscationController::class, 'store'])->name('scheduledTransaction.store');
+        Route::get('/edit/{id}', [ScheduledTranscationController::class, 'edit'])->name('scheduledTransaction.edit');
+        Route::post('/update/{id}', [ScheduledTranscationController::class, 'update'])->name('scheduledTransaction.update');
+        Route::delete('/delete/{id}',[ScheduledTranscationController::class, 'destroy'])->name('scheduledTransaction.delete');
     });
     Route::prefix('/categories')->group(function () {
         Route::get('/', [CategoryTransactionController::class, 'index'])->name('categories');
@@ -68,6 +76,8 @@ Route::view('dashboard', 'dashboard')
         Route::post('/update/{id}', [NotesController::class , 'update'])->name('notes.update');
         Route::post('/delete', [NotesController::class , 'destroy'])->name('notes.destroy');
     });
+});
+
 
 Route::middleware(['auth'])->group(function () {
     Route::redirect('settings', 'settings/profile');

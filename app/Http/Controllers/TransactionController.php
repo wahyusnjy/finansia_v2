@@ -3,12 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Imports\TransactionImport;
+use App\Imports\TransactionProtectedImport;
 use App\Models\Transaction;
 use App\Models\Items;
 use App\Models\Saving;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
+use Maatwebsite\Excel\Exceptions\LaravelExcelException;
 
 class TransactionController extends Controller
 {
@@ -19,7 +21,7 @@ class TransactionController extends Controller
     {
         $transaction = Transaction::orderBy('created_at','DESC')->paginate(10);
         $saving = Saving::where('user_id',Auth::user()->id)->get();
-        return view('pages.transaksi.transaksi')
+        return view('transaction')
         ->with('transaction',$transaction)
         ->with('saving',$saving);
     }
@@ -30,7 +32,7 @@ class TransactionController extends Controller
     public function create()
     {
         $saving = Saving::where('user_id',Auth::user()->id)->get();
-        return view('pages.transaksi.create')
+        return view('transaksi.create')
         ->with('saving',$saving);
     }
 
@@ -212,5 +214,40 @@ class TransactionController extends Controller
         }
 
         return redirect()->back()->with(['error' => 'Please choose file before!']);
+    }
+
+    public function import_encrypted(Request $request)
+    {
+        // Get the uploaded file
+        $file = $request->file('excel_file');
+
+        // Determine the password
+        $password = $request->input('password'); 
+
+        try {
+            // Use the toCollection() method to directly import and get the data
+            $collection = Excel::toCollection(new TransactionProtectedImport, $file, null, \Maatwebsite\Excel\Excel::XLS, [
+                'password' => $password
+            ]);
+            
+            // Return the first collection of data from the import
+            return response()->json([
+                'status' => 'success',
+                'message' => 'File berhasil diimport.',
+                'data' => $collection->first() // Get the first sheet's data
+            ]);
+
+        } catch (EncryptedFileException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Kata sandi file Excel salah.'
+            ], 401);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }
